@@ -42,12 +42,13 @@ env-check:
 # Simulation
 # -------------------------------
 SIM_SRCS := $(wildcard sim/*.sv) $(wildcard sim/*.v)
+RTL_SRCS := $(wildcard rtl/*.sv) $(wildcard rtl/*.v)
 sim:
 ifeq ($(strip $(SIM_SRCS)),)
 	@echo "[sim] No testbenches found in ./sim yet — skipping."
 else
 	@echo "[sim] Building and running simulations..."
-	$(IVERILOG) -g2012 -I rtl -o $(BUILD_DIR)/sim.out $(SIM_SRCS)
+	$(IVERILOG) -g2012 -I rtl -o $(BUILD_DIR)/sim.out $(SIM_SRCS) $(RTL_SRCS)
 	$(VVP) $(BUILD_DIR)/sim.out
 endif
 

@@ -1,3 +1,4 @@
+# TODO: Not working, create Docker image with all dependencies instead
 name: FPGA CI
 
 on:
