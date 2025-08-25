@@ -28,7 +28,7 @@ BIN         := $(BUILD_DIR)/top.bin
 # -------------------------------
 # Phony targets
 # -------------------------------
-.PHONY: all env-check sim build prog clean dirs
+.PHONY: all env-check sim build prog clean dirs all_blink
 
 all: build
 
@@ -48,8 +48,14 @@ ifeq ($(strip $(SIM_SRCS)),)
 	@echo "[sim] No testbenches found in ./sim yet — skipping."
 else
 	@echo "[sim] Building and running simulations..."
-	$(IVERILOG) -g2012 -I rtl -o $(BUILD_DIR)/sim.out $(SIM_SRCS) $(RTL_SRCS)
-	$(VVP) $(BUILD_DIR)/sim.out
+	@$(IVERILOG) -g2012 -I rtl -o $(BUILD_DIR)/sim_blink.out sim/tb_blink.sv $(RTL_SRCS)
+	$(VVP) $(BUILD_DIR)/sim_blink.out
+	@$(IVERILOG) -g2012 -I rtl -o $(BUILD_DIR)/sim_fp.out sim/tb_fixedpoint.sv $(RTL_SRCS)
+	$(VVP) $(BUILD_DIR)/sim_fp.out
+	@$(IVERILOG) -g2012 -I rtl -o $(BUILD_DIR)/sim_mac.out sim/tb_mac.sv $(RTL_SRCS)
+	$(VVP) $(BUILD_DIR)/sim_mac.out
+	@$(IVERILOG) -g2012 -I rtl -o $(BUILD_DIR)/sim_sgd.out sim/tb_sgd.sv $(RTL_SRCS)
+	$(VVP) $(BUILD_DIR)/sim_sgd.out
 endif
 
 # -------------------------------
@@ -93,3 +99,23 @@ prog: $(BIN)
 clean:
 	@echo "[clean] Removing build outputs"
 	@rm -rf $(BUILD_DIR)
+
+TOP_BLINK      = blink
+PCF_BLINK      = constraints/blink.pcf
+DEVICE_BLINK   = up5k
+PACKAGE_BLINK  = sg48
+FREQ_BLINK     = 12
+
+all_blink: $(TOP_BLINK).bin_blink
+
+%.json_blink: rtl/%.v
+	yosys -p "synth_ice40 -top $(TOP_BLINK) -json $@" $<
+
+%.asc_blink: %.json_blink
+	nextpnr-ice40 --$(DEVICE_BLINK) --package $(PACKAGE_BLINK) --freq $(FREQ_BLINK) --json $< --pcf $(PCF_BLINK) --asc $@
+
+%.bin_blink: %.asc_blink
+	icepack $< $@
+
+prog_blink: $(TOP_BLINK).bin_blink
+	iceprog $<

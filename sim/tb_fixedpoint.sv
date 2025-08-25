@@ -1,4 +1,5 @@
 // sim/tb_fixedpoint.sv
+// filepath: /home/agplaza/Desktop/fpga_ml/sim/tb_fixedpoint.sv
 // -----------------------------------------------------------------------------
 // Unit tests for fixed-point primitives (Q16.16 by default).
 // Uses simple tasks to check results and saturation flags.
@@ -154,4 +155,5 @@ module tb_fixedpoint;
   end
 
 endmodule
+
 `default_nettype wire

@@ -1,0 +1,7 @@
+# constraints/blink.pcf
+# iCEBreaker v1.0b PCF — Blink example
+# Map 12 MHz oscillator to clk
+set_io clk_12mhz 35
+
+# Map LED D1 (on-board green) to FPGA pin
+set_io led 11
