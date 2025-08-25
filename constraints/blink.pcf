@@ -4,4 +4,4 @@
 set_io clk_12mhz 35
 
 # Map LED D1 (on-board green) to FPGA pin
-set_io led 11
+set_io led 7

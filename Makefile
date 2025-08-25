@@ -28,7 +28,7 @@ BIN         := $(BUILD_DIR)/top.bin
 # -------------------------------
 # Phony targets
 # -------------------------------
-.PHONY: all env-check sim build prog clean dirs all_blink
+.PHONY: all env-check sim build prog clean dirs all_blink test-all
 
 all: build
 
@@ -37,6 +37,9 @@ dirs:
 
 env-check:
 	@bash scripts/env_check.sh
+
+test-all:
+	@bash scripts/run_all_tests.sh
 
 # -------------------------------
 # Simulation

@@ -46,6 +46,11 @@ module tb_mac;
     .sat_o(sat_o)
   );
 
+  // Color codes for output
+  parameter GREEN = "\033[0;32m";
+  parameter RED = "\033[0;31m";
+  parameter NC = "\033[0m"; // No Color
+
   // Helpers: Q16.16 converters
   function signed [WIDTH-1:0] q_from_real;
     input real r;
@@ -100,16 +105,16 @@ module tb_mac;
       // Check that output appears in the next cycle
       @(posedge clk);
       if (!valid_o) begin
-        $display("[FAIL] %s: valid_o was not asserted on expected cycle", name);
+        $display("%s[FAIL] %s: valid_o was not asserted on expected cycle%s", RED, name, NC);
         $finish;
       end
       
       got = real_from_q(yhat);
       if (abs_real(got - expected) > tol) begin
-        $display("[FAIL] %s: expected=%f got=%f (tol=%f)", name, expected, got, tol);
+        $display("%s[FAIL] %s: expected=%f got=%f (tol=%f)%s", RED, name, expected, got, tol, NC);
         $finish;
       end else begin
-        $display("[PASS] %s: yhat=%f within tol=%f (sat=%0d)", name, got, tol, sat_o);
+        $display("%s[PASS] %s: yhat=%f within tol=%f (sat=%0d)%s", GREEN, name, got, tol, sat_o, NC);
       end
       
       // Clear valid
@@ -146,14 +151,14 @@ module tb_mac;
     @(posedge clk);
     @(posedge clk);
     if (!valid_o) begin
-      $display("[FAIL] sat: valid_o missing");
+      $display("%s[FAIL] sat: valid_o missing%s", RED, NC);
       $finish;
     end
     if (!sat_o) begin
-      $display("[FAIL] sat: expected saturation flag to assert");
+      $display("%s[FAIL] sat: expected saturation flag to assert%s", RED, NC);
       $finish;
     end else begin
-      $display("[PASS] saturation flag asserted");
+      $display("%s[PASS] saturation flag asserted%s", GREEN, NC);
     end
     valid_i = 1'b0;
 

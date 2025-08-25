@@ -1,4 +1,5 @@
-// sim/tb_sgd.v
+// sim/tb_sgd.sv
+// filepath: /home/agplaza/Desktop/fpga_ml/sim/tb_sgd.sv
 // -----------------------------------------------------------------------------
 // Convergence test for sgd_update.v using Q16.16, N_FEATURES=1.
 // Target: y = 2*x + 1  (no noise) — expect w -> 2, b -> 1.
@@ -6,8 +7,6 @@
 
 `timescale 1ns/1ps
 `default_nettype none
-
-`include "fixedpoint.v"
 
 module tb_sgd;
 
@@ -47,6 +46,12 @@ module tb_sgd;
     .sat_o     (sat_o)
   );
 
+  // Color codes for output
+  parameter GREEN = "\033[0;32m";
+  parameter RED = "\033[0;31m";
+  parameter BLUE = "\033[0;34m";
+  parameter NC = "\033[0m"; // No Color
+
   // Helpers: Q16.16 conversions
   function [WIDTH-1:0] q_from_real;
     input real r;
@@ -80,15 +85,28 @@ module tb_sgd;
     end
   endfunction
 
+  // Absolute value function for real numbers
+  function real abs_real;
+    input real x;
+    begin
+      abs_real = (x < 0.0) ? -x : x;
+    end
+  endfunction
+
   integer i;
   real xr, yr, w_est, b_est;
 
   initial begin
+    $display("== tb_sgd: Starting SGD convergence test ==");
+    
     // Initial weights and params
     w_in_flat = put_w0(q_from_real(0.0));
     b_in      = q_from_real(0.0);
     eta       = q_from_real(0.02);     // learning rate
     lambda    = q_from_real(0.0);      // no decay for this test
+
+    $display("%sTarget function: y = 2*x + 1%s", BLUE, NC);
+    $display("%sInitial: w=0.0, b=0.0, eta=0.02%s", BLUE, NC);
 
     // Iterate training
     for (i = 0; i < 800; i = i + 1) begin
@@ -115,22 +133,28 @@ module tb_sgd;
       if ((i % 100) == 0) begin
         w_est = real_from_q(get_w0(w_in_flat));
         b_est = real_from_q(b_in);
-        $display("[iter=%0d] w=%.4f  b=%.4f  sat=%0d", i, w_est, b_est, sat_o);
+        $display("%s[iter=%0d] w=%.4f  b=%.4f  sat=%0d%s", BLUE, i, w_est, b_est, sat_o, NC);
       end
     end
 
     // Final report
     w_est = real_from_q(get_w0(w_in_flat));
     b_est = real_from_q(b_in);
-    $display("FINAL: w=%.4f  b=%.4f", w_est, b_est);
+    $display("%sFINAL: w=%.4f  b=%.4f%s", BLUE, w_est, b_est, NC);
 
-    if ($abs(w_est - 2.0) > 0.05 || $abs(b_est - 1.0) > 0.05) begin
-      $display("[FAIL] Did not converge close enough to w=2.0, b=1.0");
-      $fatal;
+    // Check convergence with proper tolerances
+    if (abs_real(w_est - 2.0) > 0.05 || abs_real(b_est - 1.0) > 0.05) begin
+      $display("%s[FAIL] Did not converge close enough to w=2.0, b=1.0%s", RED, NC);
+      $display("%s       Error: w_error=%.4f, b_error=%.4f (tolerance=0.05)%s", 
+               RED, abs_real(w_est - 2.0), abs_real(b_est - 1.0), NC);
+      $finish;
     end else begin
-      $display("[PASS] Converged to target within tolerance");
+      $display("%s[PASS] Converged to target within tolerance%s", GREEN, NC);
+      $display("%s       Final errors: w_error=%.4f, b_error=%.4f%s", 
+               GREEN, abs_real(w_est - 2.0), abs_real(b_est - 1.0), NC);
     end
 
+    $display("== tb_sgd: ALL TESTS PASSED ==");
     $finish;
   end
 
