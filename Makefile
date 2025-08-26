@@ -28,7 +28,7 @@ BIN         := $(BUILD_DIR)/top.bin
 # -------------------------------
 # Phony targets
 # -------------------------------
-.PHONY: all env-check sim build prog clean dirs all_blink test-all
+.PHONY: all env-check sim build prog clean dirs build-blink test-all prog-blink
 
 all: build
 
@@ -109,7 +109,7 @@ DEVICE_BLINK   = up5k
 PACKAGE_BLINK  = sg48
 FREQ_BLINK     = 12
 
-all_blink: $(TOP_BLINK).bin_blink
+build-blink: $(TOP_BLINK).bin_blink
 
 %.json_blink: rtl/%.v
 	yosys -p "synth_ice40 -top $(TOP_BLINK) -json $@" $<
@@ -120,5 +120,5 @@ all_blink: $(TOP_BLINK).bin_blink
 %.bin_blink: %.asc_blink
 	icepack $< $@
 
-prog_blink: $(TOP_BLINK).bin_blink
+prog-blink: $(TOP_BLINK).bin_blink
 	iceprog $<
